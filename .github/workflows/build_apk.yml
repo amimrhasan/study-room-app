@@ -21,22 +21,25 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: "3.24.5"
           channel: "stable"
 
-      - name: Create missing platform scaffolding (android/ios) while keeping custom files
+      - name: Create missing platform scaffolding while keeping custom files
         run: |
           cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak || true
           flutter create --org com.junaid.studyroom --project-name study_room_app .
           cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml || true
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - name: Install Dependencies & Fix AGP Proguard Rule
+        run: |
+          flutter pub get
+          find ~/.pub-cache -name "build.gradle" -exec sed -i "s/proguard-android.txt/proguard-android-optimize.txt/g" {} + || true
 
       - name: Generate App Launcher Icon
         run: dart run flutter_launcher_icons || true
 
       - name: Build Release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-shrink
 
       - name: Upload Ready-to-Install APK
         uses: actions/upload-artifact@v4
