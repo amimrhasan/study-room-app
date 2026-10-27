@@ -1,0 +1,20 @@
+workflows:
+  study-room-android-apk:
+    name: Study Room Android APK
+    max_build_duration: 30
+    environment:
+      flutter: stable
+    scripts:
+      - name: Initialize Android folder & keep custom Manifest
+        script: |
+          cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml.bak || true
+          flutter create --org com.junaid.studyroom --project-name study_room_app .
+          cp /tmp/AndroidManifest.xml.bak android/app/src/main/AndroidManifest.xml || true
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Generate App Icon
+        script: dart run flutter_launcher_icons || true
+      - name: Build Release APK
+        script: flutter build apk --release
+    artifacts:
+      - build/**/outputs/**/*.apk
